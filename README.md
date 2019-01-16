@@ -10,17 +10,17 @@ This repository contains a wrapper around the (pretty good) PHP functionalities 
     $ftp->connect();
     $ftp->login($user, $password);
 
-    $ftp->get($local_path, $remote_path);
-    $ftp->put($local_path, $remote_path);
-    $ftp->delete($remote_path);
+    $ftp->get($local_path, $remote_path); 
+    $ftp->put($local_path, $remote_path); 
+    $ftp->delete($remote_path);           
+    $ftp->mkdir($remote_path);
+    $entries = $ftp->ls($remote_path, true);
+        
     $status = $ftp->deleteIfExists($remote_path);
+    $status = $ftp->fileExists($remote_path);
     $status = $ftp->directoryExists($remote_path);
     $entry = $ftp->entryExists($remote_path);
-    $status = $ftp->fileExists($remote_path);
-    $entries = $ftp->ls($remote_path, true);
-    $ftp->mkdir($remote_path);
     $status = $ftp->mkdirRecursiveIfNotExist($remote_path);
-    $ftp->mkdirRecursiveIfNotExist($remote_path);
 
 # Installation
 
@@ -37,6 +37,22 @@ Or, from within the file composer.json:
 # Documentation
 
 The code is heavily documented and there is a simple example for each method.  
+
+* **connect()**: Open a connexion to the server.
+* **disconnect()**: Close the connexion to the server.
+* **login($in_user_name, $in_password)**: Authenticate to the server.
+* **isLogged()**: Test whether the client has authenticated to the server.
+* **ls($in_opt_dir='.', $in_opt_throw_exception_on_error=false)**: List the content of a directory identified by its given path. This function parses the output returned by the server.
+* **put($in_local_file_path, $in_remote_file_path, $in_opt_mode=FTP_BINARY)**: Put a file from the local host to the remote server.
+* **get($in_local_lile_path, $in_remote_file_path, $in_opt_mode=FTP_BINARY)**: Get a file from the remote server to the local host.
+* **mkdir($in_directory_path)**: Create a directory on the remote host.
+* **mkdirRecursiveIfNotExist($in_directory_path)**: Recursively create a directory identified by its given path, if the directory does not already exist.
+* **rmdir($in_directory_path):** Remove a directory identified by its given path.
+* **delete($in_file_path)**: Delete a file identified by its given path on the remote server.
+* **deleteIfExists($in_directory_path)**: Test whether a file exists, and if it does, then delete it.
+* **entryExists($in_entry_path)**: Test whether an entry (directory, file of link), identified by its given path, exists or not.
+* **directoryExists($in_path)**: Test whether a directory, identified by its given path, exists or not.
+* **fileExists($in_path)**: Test whether a file, identified by its given path, exists or not.
 
 # Unit tests
 

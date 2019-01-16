@@ -143,7 +143,7 @@ class Ftp
     }
 
     /**
-     * List the content of a a directory identified by its given path.
+     * List the content of a directory identified by its given path. This function parses the output returned by the server.
      * @param string $in_opt_dir Path to the directory.
      *        The default value is ".".
      * @param bool $in_opt_throw_exception_on_error Specify whether the method should throw an exception if the client
@@ -231,7 +231,7 @@ class Ftp
     }
 
     /**
-     * Create a directory.
+     * Create a directory on the remote host.
      * @param string $in_directory_path Path to the directory to create.
      * @throws Exception
      */
