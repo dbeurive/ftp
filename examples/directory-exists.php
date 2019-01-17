@@ -11,6 +11,7 @@
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'bootstrap.php';
 use dbeurive\Ftp\Ftp;
+use dbeurive\Ftp\Exception as FtpException;
 
 $path = $argv[1];
 
