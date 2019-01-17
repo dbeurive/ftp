@@ -44,15 +44,48 @@ The code is heavily documented and there is a simple example for each method.
 * **isLogged()**: Test whether the client has authenticated to the server.
 * **ls($in_opt_dir='.', $in_opt_throw_exception_on_error=false)**: List the content of a directory identified by its given path. This function parses the output returned by the server.
 * **put($in_local_file_path, $in_remote_file_path, $in_opt_mode=FTP_BINARY)**: Put a file from the local host to the remote server.
-* **get($in_local_lile_path, $in_remote_file_path, $in_opt_mode=FTP_BINARY)**: Get a file from the remote server to the local host.
+* **get($in_local_file_path, $in_remote_file_path, $in_opt_mode=FTP_BINARY)**: Get a file from the remote server to the local host.
 * **mkdir($in_directory_path)**: Create a directory on the remote host.
 * **mkdirRecursiveIfNotExist($in_directory_path)**: Recursively create a directory identified by its given path, if the directory does not already exist.
 * **rmdir($in_directory_path):** Remove a directory identified by its given path.
 * **delete($in_file_path)**: Delete a file identified by its given path on the remote server.
 * **deleteIfExists($in_directory_path)**: Test whether a file exists, and if it does, then delete it.
 * **entryExists($in_entry_path)**: Test whether an entry (directory, file of link), identified by its given path, exists or not.
-* **directoryExists($in_path)**: Test whether a directory, identified by its given path, exists or not.
-* **fileExists($in_path)**: Test whether a file, identified by its given path, exists or not.
+* **directoryExists($in_directory_path)**: Test whether a directory, identified by its given path, exists or not.
+* **fileExists($in_file_path)**: Test whether a file, identified by its given path, exists or not.
+* **setEntryClassName($in_class_name)**: Set the name of the class that represents en entry.
+
+The last method (`setEntryClassName`) needs to be described with more details.
+
+The FTP command LIST returns a text that represents the list of entries (directories, files or links) in the remote
+directory. For example:
+
+    -rw-r--r--    1 0        0               1 Jan 15 14:08 file0.txt
+    -rw-r--r--    1 0        0               2 Jan 15 14:08 file1.txt
+    -rw-r--r--    1 0        0               3 Jan 15 14:08 file2.txt
+    -rw-r--r--    1 0        0               4 Jan 15 14:08 file3.txt
+    drwxr-xr-x    2 0        0            4096 Jan 15 14:08 r1
+    drwxr-xr-x    2 0        0            4096 Jan 15 14:08 r2
+    drwxr-xr-x    2 0        0            4096 Jan 15 14:08 r3
+    drwxr-xr-x    2 0        0            4096 Jan 15 14:08 r4
+
+Please note that:
+
+* the organisation of the text returned by the FTP command LIST may vary from one OS to another, or from 
+one FTP server to another.
+* depending on the OS or the FTP server, the properties associated with the entries may not be identical. 
+
+However, this text must be parsed in order to extract the list of entries, along with their properties (permissions,
+owners, groups...).
+
+It is not possible to handle all possible text organisations (for all OS and maybe, all FTP servers) and all possible
+properties.
+
+Thus, the FTP wrapper lets the user the possibility to declare its own class that handles the parsing of the text and
+manages the properties. The default class used is [EntryUnix](https://github.com/dbeurive/ftp/blob/master/src/EntryUnix.php).
+
+However, you can write and declare your own class to handle another use case. Your class must extends the abstract class
+[AbstractEntry](https://github.com/dbeurive/ftp/blob/master/src/AbstractEntry.php).
 
 # Unit tests
 

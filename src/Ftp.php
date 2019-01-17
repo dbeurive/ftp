@@ -401,15 +401,15 @@ class Ftp
 
     /**
      * Test whether a directory, identified by its given path, exists or not.
-     * @param string $in_path Path to the directory.
+     * @param string $in_directory_path Path to the directory.
      * @return bool The method may return true or false, depending on the context:
      *         - If the directory does not exist, or if it represents a file, then the method returns the value false.
      *         - If the directory exists, then the method returns the value true.
      * @throws Exception
      */
-    public function directoryExists($in_path) {
+    public function directoryExists($in_directory_path) {
         /** @var AbstractEntry|bool $entry */
-        $entry = $this->entryExists($in_path);
+        $entry = $this->entryExists($in_directory_path);
         if (is_bool($entry)) {
             return $entry;
         }
@@ -418,16 +418,16 @@ class Ftp
 
     /**
      * Test whether a file, identified by its given path, exists or not.
-     * @param string $in_path Path to the file.
+     * @param string $in_file_path Path to the file.
      * @return array|bool
      * @return bool|mixed The method may return true or false, depending on the context:
      *         - If the file does not exist, or if it represents a directory, then the method returns the value false.
      *         - If the file exists, then the method returns the value true.
      * @throws Exception
      */
-    public function fileExists($in_path) {
+    public function fileExists($in_file_path) {
         /** @var AbstractEntry|bool $entry */
-        $entry = $this->entryExists($in_path);
+        $entry = $this->entryExists($in_file_path);
         if (is_bool($entry)) {
             return false;
         }
