@@ -33,29 +33,14 @@ class FtpTest extends TestCase
     const RV_FILE = 3;
     const RV_DIRECTORY = 4;
 
-
-    static private $__expected_entries = array(
-        'file.txt' => array(
-            Ftp::ENTRY_TYPE => Ftp::ENTRY_TYPE_FILE
-        ),
-        'file 1.txt' => array(
-            Ftp::ENTRY_TYPE => Ftp::ENTRY_TYPE_FILE
-        ),
-        'file 2.txt ' => array(
-            Ftp::ENTRY_TYPE => Ftp::ENTRY_TYPE_FILE
-        ),
-        '  file  3.txt  ' => array(
-            Ftp::ENTRY_TYPE => Ftp::ENTRY_TYPE_FILE
-        ),
-        'r1' => array(
-            Ftp::ENTRY_TYPE => Ftp::ENTRY_TYPE_DIRECTORY
-        ),
-        'directory with spaces 1' => array(
-            Ftp::ENTRY_TYPE => Ftp::ENTRY_TYPE_DIRECTORY
-        ),
-        '  directory  with  spaces 2  ' => array(
-            Ftp::ENTRY_TYPE => Ftp::ENTRY_TYPE_DIRECTORY
-        )
+    static private $__expected_types = array(
+        'file.txt' => self::RV_FILE,
+        'file 1.txt' => self::RV_FILE,
+        'file 2.txt ' => self::RV_FILE,
+        '  file  3.txt  ' => self::RV_FILE,
+        'r1' => self::RV_DIRECTORY,
+        'directory with spaces 1' => self::RV_DIRECTORY,
+        '  directory  with  spaces 2  ' => self::RV_DIRECTORY
     );
 
     public static function setUpBeforeClass() {
@@ -196,18 +181,20 @@ class FtpTest extends TestCase
         $ftp = new Ftp(self::$__remoteHostOk, $options);
         $ftp->connect();
         $ftp->login(self::$__userOk, self::$__passwordOk);
+        /** @var array $entries Key:<name of the entry> and Value:<entry object> */
         $entries = $ftp->ls(self::$__rootOnRemote, true);
 
 
-        foreach (self::$__expected_entries as $e => $d) {
-            $this->assertArrayHasKey($e, $entries);
-            $this->assertEquals($d[Ftp::ENTRY_TYPE], $entries[$e][Ftp::ENTRY_TYPE]);
+        foreach (self::$__expected_types as $entry_name => $expected_type) {
+            /** @var \dbeurive\Ftp\AbstractEntry $entry */
+            $entry = $entries[$entry_name];
+            $this->assertArrayHasKey($entry_name, $entries);
+            switch ($expected_type) {
+                case self::RV_FILE: $this->assertTrue($entry->isFile()); break;
+                case self::RV_DIRECTORY: $this->assertTrue($entry->isDirectory()); break;
+                default: throw new \Exception('Unexpected error');
+            }
         }
-
-        // $entries = $ftp->ls('/', true);
-        // file_put_contents('debug1.txt', print_r($entries, true));
-        // $entries = $ftp->ls('./', true);
-        // file_put_contents('debug2.txt', print_r($entries, true));
 
         $ftp->disconnect();
 
@@ -225,12 +212,16 @@ class FtpTest extends TestCase
         $ftp->connect();
         $ftp->login(self::$__userOk, self::$__passwordOk);
 
-        foreach (self::$__expected_entries as $e => $d) {
-            if (Ftp::ENTRY_TYPE_FILE != $d[Ftp::ENTRY_TYPE]) {
+        /**
+         * @var string $_entry_name
+         * @var int $_expected_entry_type
+         */
+        foreach (self::$__expected_types as $_entry_name => $_expected_entry_type) {
+            if (self::RV_FILE != $_expected_entry_type) {
                 continue;
             }
-            $local =  sprintf('%s/%s', sys_get_temp_dir(), self::$__rootOnRemote, $e);
-            $remote = sprintf('%s/%s', self::$__rootOnRemote, $e);
+            $local =  sprintf('%s/%s', sys_get_temp_dir(), $_entry_name);
+            $remote = sprintf('%s/%s', self::$__rootOnRemote, $_entry_name);
             $ftp->get($local, $remote);
             $this->assertFileExists($local);
             unlink($local);
@@ -258,12 +249,16 @@ class FtpTest extends TestCase
         $ftp->connect();
         $ftp->login(self::$__userOk, self::$__passwordOk);
 
-        foreach (self::$__expected_entries as $e => $d) {
-            if (Ftp::ENTRY_TYPE_DIRECTORY != $d[Ftp::ENTRY_TYPE]) {
+        /**
+         * @var string $_entry_name
+         * @var int $_expected_entry_type
+         */
+        foreach (self::$__expected_types as $_entry_name => $_expected_entry_type) {
+            if (self::RV_DIRECTORY != $_expected_entry_type) {
                 continue;
             }
-            $local =  sprintf('%s/%s', sys_get_temp_dir(), self::$__rootOnRemote, $e);
-            $remote = sprintf('%s/%s', self::$__rootOnRemote, $e);
+            $local =  sprintf('%s/%s', sys_get_temp_dir(), $_entry_name);
+            $remote = sprintf('%s/%s', self::$__rootOnRemote, $_entry_name);
             $ftp->get($local, $remote);
             break;
         }
@@ -431,20 +426,20 @@ class FtpTest extends TestCase
         $ftp->login(self::$__userOk, self::$__passwordOk);
 
         /** @var string $_path */
-        foreach ($paths as $_path => $_status) {
-            $status = $ftp->entryExists($_path);
-            switch ($_status) {
-                case self::RV_TRUE: $this->assertTrue($status); break;
-                case self::RV_FALSE: $this->assertFalse($status); break;
+        foreach ($paths as $_path => $_expected_status) {
+            /** @var bool|\dbeurive\Ftp\AbstractEntry $entry */
+            $entry = $ftp->entryExists($_path);
+            switch ($_expected_status) {
+                case self::RV_TRUE: $this->assertTrue($entry); break;
+                case self::RV_FALSE: $this->assertFalse($entry); break;
                 case self::RV_FILE: {
-                    $this->assertInternalType('array', $status);
-                    $this->assertArrayHasKey(Ftp::ENTRY_TYPE, $status);
-                    $this->assertEquals(Ftp::ENTRY_TYPE_FILE, $status[Ftp::ENTRY_TYPE]);
+                    $this->assertInstanceOf(\dbeurive\Ftp\AbstractEntry::class, $entry);
+                    $this->assertTrue($entry->isFile());
+
                 }; break;
                 case self::RV_DIRECTORY: {
-                    $this->assertInternalType('array', $status);
-                    $this->assertArrayHasKey(Ftp::ENTRY_TYPE, $status);
-                    $this->assertEquals(Ftp::ENTRY_TYPE_DIRECTORY, $status[Ftp::ENTRY_TYPE]);
+                    $this->assertInstanceOf(\dbeurive\Ftp\AbstractEntry::class, $entry);
+                    $this->assertTrue($entry->isDirectory());
                 }; break;
                 default: throw new \Exception('Unexpected error!');
             }
@@ -514,11 +509,11 @@ class FtpTest extends TestCase
         $ftp->login(self::$__userOk, self::$__passwordOk);
 
         /** @var string $_path */
-        foreach ($paths as $_path => $_status) {
+        foreach ($paths as $_path => $_expected_status) {
             $status = $ftp->directoryExists($_path);
-            switch ($_status) {
+            switch ($_expected_status) {
                 case true: $this->assertTrue($status); break;
-                case false: RV_FALSE: $this->assertFalse($status); break;
+                case false: $this->assertFalse($status); break;
                 default: throw new \Exception('Unexpected error!');
             }
         }
@@ -587,11 +582,11 @@ class FtpTest extends TestCase
         $ftp->login(self::$__userOk, self::$__passwordOk);
 
         /** @var string $_path */
-        foreach ($paths as $_path => $_status) {
+        foreach ($paths as $_path => $_expected_status) {
             $status = $ftp->fileExists($_path);
-            switch ($_status) {
+            switch ($_expected_status) {
                 case true: $this->assertTrue($status); break;
-                case false: RV_FALSE: $this->assertFalse($status); break;
+                case false: $this->assertFalse($status); break;
                 default: throw new \Exception('Unexpected error!');
             }
         }
@@ -640,9 +635,9 @@ class FtpTest extends TestCase
         $ftp->connect();
         $ftp->login(self::$__userOk, self::$__passwordOk);
 
-        foreach ($paths as $_path => $_status) {
+        foreach ($paths as $_path => $_expected_status) {
             $status = $ftp->mkdirRecursiveIfNotExist($_path);
-            $this->assertEquals($status, $_status);
+            $this->assertEquals($status, $_expected_status);
         }
 
         $ftp->disconnect();
