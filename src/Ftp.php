@@ -16,25 +16,11 @@ namespace dbeurive\Ftp;
 
 class Ftp
 {
-    const OPTION_PORT       = 'port';
-    const OPTION_TIMEOUT    = 'timeout';
+    const OPTION_PORT        = 'port';
+    const OPTION_TIMEOUT     = 'timeout';
 
-    const ENTRY_PERMISSIONS = 'permission';
-    const ENTRY_NUMBER = 'number';
-    const ENTRY_OWNER = 'owner';
-    const ENTRY_GROUP = 'group';
-    const ENTRY_SIZE = 'size';
-    const ENTRY_MONTH = 'month';
-    const ENTRY_DAY = 'day';
-    const ENTRY_TIME = 'time';
-    const ENTRY_NAME = 'name';
-    const ENTRY_TYPE = 'type';
-
-    const ENTRY_TYPE_DIRECTORY = 'directory';
-    const ENTRY_TYPE_FILE = 'file';
-    const ENTRY_TYPE_LINK = 'link';
-    const ENTRY_TYPE_UNKNOWN = 'unknown';
-
+    /** @var string Name of the class used to parse the text returned by the FTP command LIST. */
+    private $__entryClassName = EntryUnix::class;
     /** @var string */
     private $__userName;
     /** @var string */
@@ -79,6 +65,16 @@ class Ftp
         }
 
         $this->__host = $in_host;
+    }
+
+    /**
+     * Set the name of the class that represents en entry.
+     * @param string $in_class_name Name of the class that represents an entry.
+     * @return $this
+     */
+    public function setEntryClassName($in_class_name) {
+        $this->__entryClassName = $in_class_name;
+        return $this;
     }
 
     /**
@@ -156,8 +152,7 @@ class Ftp
      *           + If $in_opt_throw_exception_on_error=true: the method throws an exception.
      *         - If the client could perform the required action:
      *           The method returns an associative array which keys are the names of the entries (directories, files or
-     *           links) found within the given path, and the values are associative arrays that contain information about each entry.
-     *           See the static method parseLsRaw() for details.
+     *           links) found within the given path, and the values are instances of the class that represents an entry.
      * @see parseLsRaw
      * @throws Exception
      */
@@ -171,7 +166,7 @@ class Ftp
             }
         }
 
-        return self::parseLsRaw($files_raw);
+        return $this->parseLsRaw($files_raw, $in_opt_dir);
     }
 
     /**
@@ -200,22 +195,22 @@ class Ftp
 
     /**
      * Get a file from the remote server to the local host.
-     * @param string $in_local_lile_path Path to the local file that will be used to store the file.
+     * @param string $in_local_file_path Path to the local file that will be used to store the file.
      * @param string $in_remote_file_path Path to the remove file to get.
      * @param int $in_opt_mode FTP_BINARY or FTP_ASCII
      * @throws Exception
      */
-    public function get($in_local_lile_path, $in_remote_file_path, $in_opt_mode=FTP_BINARY) {
+    public function get($in_local_file_path, $in_remote_file_path, $in_opt_mode=FTP_BINARY) {
         if (false === @ftp_get(
             $this->__ftpStream,
-            $in_local_lile_path,
+            $in_local_file_path,
             $in_remote_file_path,
             $in_opt_mode)) {
             $error = error_get_last();
             throw new Exception(sprintf('Cannot get remote file "%s" from remote host "%s" as local file "%s". %s',
                 $in_remote_file_path,
                 $this->__host,
-                $in_local_lile_path,
+                $in_local_file_path,
                 $error['message']));
         }
     }
@@ -252,7 +247,6 @@ class Ftp
      *         - If the directory was not created because it already exists, then the method returns the value null.
      *         - If the directory was not created because a file with the same name already exists, then the method returns
      *           the value false.
-     *
      * @throws Exception
      */
     public function mkdirRecursiveIfNotExist($in_directory_path) {
@@ -274,25 +268,22 @@ class Ftp
                 $p = $p . '/' . $parts[$i];
             }
 
-            $status = $this->entryExists($p);
+            /** @var bool|AbstractEntry $entry */
+            $entry = $this->entryExists($p);
 
-            if (true === $status) {
+            if (true === $entry) {
                 // $p is "/"
                 continue;
             }
 
-            if (false === $status) {
+            if (false === $entry) {
                 // Create a directory.
                 $this->mkdir($p);
                 $result = true;
                 continue;
             }
 
-            if (! is_array($status)) {
-                throw new Exception('Unexpected error!');
-            }
-
-            if (self::ENTRY_TYPE_DIRECTORY != $status[self::ENTRY_TYPE]) {
+            if (! $entry->isDirectory()) {
                 return false;
             }
         }
@@ -330,41 +321,41 @@ class Ftp
 
     /**
      * Test whether a file exists, and if it does, then delete it.
-     * @param string $in_directory_path Pat to the file to delete on the remote server.
+     * @param string $in_file_path Pat to the file to delete on the remote server.
      * @return bool The method returns true of false, depending on the context:
      *         - If the file existed and was successfully deleted, then the method returns the value true.
      *         - If the file did not exist, then the method returns the value false.
      * @throws Exception If the file existed but could not be deleted, then the method throws an exception.
      */
-    public function deleteIfExists($in_directory_path) {
+    public function deleteIfExists($in_file_path) {
 
-        $status = $this->entryExists($in_directory_path);
+        /** @var bool|AbstractEntry $entry */
+        $entry = $this->entryExists($in_file_path);
 
-        if (true === $status) {
-            throw new Exception(sprintf('It is not possible to remove the directory "%s"', $in_directory_path));
+        if (true === $entry) {
+            throw new Exception(sprintf('It is not possible to remove the directory "%s"', $in_file_path));
         }
 
-        if (false === $status) {
+        if (false === $entry) {
             return false;
         }
 
-        if (self::ENTRY_TYPE_FILE != $status[self::ENTRY_TYPE]) {
-            throw new Exception(sprintf('The entry identified by the "%s" is a directory!', $in_directory_path));
+        if (! $entry->isFile()) {
+            throw new Exception(sprintf('The entry identified by the "%s" is a directory!', $in_file_path));
         }
 
-        $this->delete($in_directory_path);
+        $this->delete($in_file_path);
         return true;
     }
 
     /**
      * Test whether an entry (directory, file of link), identified by its given path, exists or not.
      * @param string $in_entry_path Path to the entry.
-     * @return bool|array The method may return an array, the value true, or the value false, depending on the context:
+     * @return bool|AbstractEntry The method may return an instance of the class then represents an entry, the value true,
+     *         or the value false, depending on the context:
      *         - If the entry is "/", "." or "./", then the method returns the value true.
      *         - If the entry does not exist, then the method returns the value false.
-     *         - If the entry exists, then the method returns an array that contains information about the entry.
-     *           See the static method parseLsRaw() for details.
-     * @see parseLsRaw
+     *         - If the entry exists, then the method returns an instance of the class that represents an entry.
      * @throws Exception
      */
     public function entryExists($in_entry_path) {
@@ -385,22 +376,22 @@ class Ftp
                 $p = $p . '/' . $parts[$i];
             }
 
-            if (false === $entries = $this->ls($p)) {
-                return false;
-            }
+            /** @var array $entries Key:<name of the entry> and Value:<entry object> */
+            $entries = $this->ls($p, true);
 
             $next = $parts[$i+1];
             if (! array_key_exists($next, $entries)) {
                 return false;
             }
 
+            /** @var AbstractEntry $next_entry */
             $next_entry = $entries[$next];
 
             if (count($parts) == $i+2) {
                 return $next_entry;
             }
 
-            if (self::ENTRY_TYPE_DIRECTORY != $next_entry[self::ENTRY_TYPE]) {
+            if (! $next_entry->isDirectory()) {
                 return false;
             }
         }
@@ -417,12 +408,12 @@ class Ftp
      * @throws Exception
      */
     public function directoryExists($in_path) {
-        /** @var array|bool $status */
-        $status = $this->entryExists($in_path);
-        if (is_bool($status)) {
-            return $status;
+        /** @var AbstractEntry|bool $entry */
+        $entry = $this->entryExists($in_path);
+        if (is_bool($entry)) {
+            return $entry;
         }
-        return $status[self::ENTRY_TYPE] == self::ENTRY_TYPE_DIRECTORY;
+        return $entry->isDirectory();
     }
 
     /**
@@ -435,12 +426,12 @@ class Ftp
      * @throws Exception
      */
     public function fileExists($in_path) {
-        /** @var array|bool $status */
-        $status = $this->entryExists($in_path);
-        if (is_bool($status)) {
+        /** @var AbstractEntry|bool $entry */
+        $entry = $this->entryExists($in_path);
+        if (is_bool($entry)) {
             return false;
         }
-        return $status[self::ENTRY_TYPE] == self::ENTRY_TYPE_FILE;
+        return $entry->isFile();
     }
 
     /**
@@ -468,20 +459,13 @@ class Ftp
     /**
      * Parse the output of the FTP command LIST.
      * @param array $in_raw_list Output of the FTP command LIST.
+     * @param string $in_dir Path to the directory from which the entries were listed.
      * @return array The method returns an associative array which keys are entries (files or directories) names and
-     *         values data about the entry. The values are associative arrays that contain the keys listed below:
-     *         - ENTRY_PERMISSIONS
-     *         - ENTRY_NUMBER
-     *         - ENTRY_OWNER
-     *         - ENTRY_GROUP
-     *         - ENTRY_SIZE
-     *         - ENTRY_MONTH
-     *         - ENTRY_DAY
-     *         - ENTRY_TIME
+     *         values are instances of the class that represents an entry.
      * @throws Exception
      * @see http://www.nsftools.com/tips/RawFTP.htm#LIST
      */
-    static public function parseLsRaw(array $in_raw_list)
+    public function parseLsRaw(array $in_raw_list, $in_dir)
     {
         // -rw-r--r--    1 0        0               1 Jan 15 14:08 file0.txt
         // -rw-r--r--    1 0        0               2 Jan 15 14:08 file1.txt
@@ -496,56 +480,20 @@ class Ftp
         // -... => file
         // l... => link
 
-        $cols = array(
-            self::ENTRY_PERMISSIONS,
-            self::ENTRY_NUMBER,
-            self::ENTRY_OWNER,
-            self::ENTRY_GROUP,
-            self::ENTRY_SIZE,
-            self::ENTRY_MONTH,
-            self::ENTRY_DAY,
-            self::ENTRY_TIME,
-            self::ENTRY_NAME
-        );
 
-        $files = array();
+        $entries = array();
         /**
          * @var int $position
          * @var string $data_text
          */
         foreach($in_raw_list as $position => $data_text)
         {
-            $parsed_data = preg_split('/\s+/', $data_text);
-
-            if ( count($parsed_data) < count($cols)) {
-                throw new Exception(sprintf('Cannot parse the text returned by the function "ftp_rawlist()". This record is not valid: "%s"', $data_text));
-            }
-
-            $s = $data_text;
-            for ($i=0; $i<8; $i++) {
-                $s = preg_replace('/^\s+/', '', $s);
-                $s = substr($s, strlen($parsed_data[$i]));
-            }
-
-            $name = substr($s, 1);
-
-            $p = array();
-            for ($i=0; $i<8; $i++) {
-                $p[$cols[$i]] = $parsed_data[$i];
-            }
-            $type = substr($p[self::ENTRY_PERMISSIONS], 0, 1);
-
-            switch ($type) {
-                case 'd': $p[self::ENTRY_TYPE] = self::ENTRY_TYPE_DIRECTORY; break;
-                case '-': $p[self::ENTRY_TYPE] = self::ENTRY_TYPE_FILE; break;
-                case 'l': $p[self::ENTRY_TYPE] = self::ENTRY_TYPE_LINK; break;
-                default:  $p[self::ENTRY_TYPE] = self::ENTRY_TYPE_UNKNOWN;
-            }
-
-            $files[$name] = $p;
+            /** @var AbstractEntry $e */
+            $e = call_user_func($this->__entryClassName . '::getInstance', $data_text, $in_dir);
+            $entries[$e->getBaseName()] = $e;
         }
 
-        return $files;
+        return $entries;
     }
 
 
