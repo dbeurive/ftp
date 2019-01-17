@@ -21,6 +21,8 @@ This repository contains a wrapper around the (pretty good) PHP functionalities 
     $status = $ftp->directoryExists($remote_path);
     $entry = $ftp->entryExists($remote_path);
     $status = $ftp->mkdirRecursiveIfNotExist($remote_path);
+    
+    $ftp->setEntryClassName($your_own_class);
 
 # Installation
 
