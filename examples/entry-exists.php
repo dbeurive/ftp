@@ -27,6 +27,6 @@ if (true === $entry) {
 } elseif (false === $entries) {
     printf("The entry '%s' does not exist.\n", $entry);
 } else {
-    printf("The entry '%s' exists. And that's the information we have about it:\n\n", $entry);
-    var_dump($entry);
+    printf("The entry '%s' exists. And that's the information we have about it:\n\n%s\n\n", $entry, $entry);
+
 }
