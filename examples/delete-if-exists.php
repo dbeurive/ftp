@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Usage php delete-if-entry-exists.php /path/to/a/remote/file
+ * Usage php delete-if-exists.php /path/to/a/remote/file
  *
  * Examples:
  *
- *    php delete-if-entry-exists.php ./files/file.txt
+ *    php delete-if-exists.php ./files/file.txt
  */
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'bootstrap.php';
