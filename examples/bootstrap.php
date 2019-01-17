@@ -9,16 +9,17 @@ $port = null;
 $timeout = null;
 
 $errors = array();
+
 if (false === $host = getenv('FTP_HOST')) {
-    $error[] = "Environment variable FTP_HOST is not defined.";
+    $errors[] = "Environment variable FTP_HOST is not defined.";
 }
 
 if (false === $user = getenv('FTP_USER')) {
-    $error[] = "Environment variable FTP_USER is not defined.";
+    $errors[] = "Environment variable FTP_USER is not defined.";
 }
 
 if (false === $password = getenv('FTP_PASSWORD')) {
-    $error[] = "Environment variable FTP_PASSWORD is not defined.";
+    $errors[] = "Environment variable FTP_PASSWORD is not defined.";
 }
 
 if (false === $port = getenv('FTP_PORT')) {
@@ -29,8 +30,14 @@ if (false === $timeout = getenv('FTP_TIMEOUT')) {
     $timeout = 10;
 }
 
+
 if (count($errors) > 0) {
-    printf("The script could not be executed because some configuration parameter are not defined:\n\n%s\n", implode("\n", $errors));
+    $script = __DIR__ . DIRECTORY_SEPARATOR . 'setenv.sh';
+    printf("The script could not be executed because some configuration parameter are not defined:\n\n%s\n\n", implode("\n", $errors));
+    printf("Did you \"sourced\" the script \"%s\" ?\n\n", $script);
+    printf("If not, then execute the following command:\n\n. %s\n\n", $script);
     exit(1);
 }
+
+
 
