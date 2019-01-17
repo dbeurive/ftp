@@ -28,5 +28,12 @@ try {
     printf("ERROR: %s\n", $e->getMessage());
 }
 
-var_dump($entries);
+/**
+ * @var string $_name
+ * @var \dbeurive\Ftp\AbstractEntry $_entry
+ */
+foreach ($entries as $_name => $_entry) {
+    printf("%s\n\n", $_entry);
+}
+
 
