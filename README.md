@@ -55,9 +55,9 @@ The code is heavily documented and there is a simple example for each method.
 * **entryExists($in_entry_path)**: Test whether an entry (directory, file of link), identified by its given path, exists or not.
 * **directoryExists($in_directory_path)**: Test whether a directory, identified by its given path, exists or not.
 * **fileExists($in_file_path)**: Test whether a file, identified by its given path, exists or not.
-* **setEntryClassName($in_class_name)**: Set the name of the class that represents en entry.
+* **setEntryManager($in_class_name)**: Set the name of the class that represents an entry (file, directory or link, on the remote host) and is responsible for parsing the output of the FTP command LIST.  
 
-The last method (`setEntryClassName`) needs to be described with more details.
+The last method (`setEntryManager`) needs to be described with more details.
 
 The FTP command LIST returns a text that represents the list of entries (directories, files or links) in the remote
 directory. For example:

@@ -1,11 +1,21 @@
 <?php
 
+/**
+ * This file contains the implementation of the default entry manager suitable for typical UNIX FTP servers.
+ */
+
 namespace dbeurive\Ftp;
 
 
-use function PHPSTORM_META\map;
+/**
+ * Class EntryManagerUnix
+ *
+ * This class implements the default entry manager suitable for typical UNIX FTP servers.
+ *
+ * @package dbeurive\Ftp
+ */
 
-class EntryUnix extends AbstractEntry
+class EntryManagerUnix extends AbstractEntryManager
 {
     const ENTRY_FIELD_PERMISSIONS = 'permission';
     const ENTRY_FIELD_NUMBER = 'number';
@@ -54,11 +64,9 @@ class EntryUnix extends AbstractEntry
     /** @var string Path to the directory from which this entry comes from. */
     private $__parent_path;
 
+
     /**
-     * EntryUnix constructor.
-     * @param $in_entry_line
-     * @param $in_parent_path
-     * @throws Exception
+     * @see AbstractEntryManager
      */
     public function __construct($in_entry_line, $in_parent_path)
     {
@@ -66,31 +74,51 @@ class EntryUnix extends AbstractEntry
         $this->__fields = self::parse($in_entry_line);
     }
 
+    /**
+     * @see AbstractEntryManager
+     */
     public function isFile() {
         return self::ENTRY_TYPE_FILE == $this->__fields[self::ENTRY_FIELD_TYPE];
     }
 
+    /**
+     * @see AbstractEntryManager
+     */
     public function isDirectory() {
         return self::ENTRY_TYPE_DIRECTORY == $this->__fields[self::ENTRY_FIELD_TYPE];
     }
 
+    /**
+     * @see AbstractEntryManager
+     */
     public function isLink() {
         return self::ENTRY_TYPE_LINK == $this->__fields[self::ENTRY_FIELD_TYPE];
     }
 
+    /**
+     * @see AbstractEntryManager
+     */
     public function getBaseName() {
         return $this->__fields[self::ENTRY_FIELD_NAME];
-
     }
 
+    /**
+     * @see AbstractEntryManager
+     */
     public function getParentPath() {
         return $this->__parent_path;
     }
 
+    /**
+     * @see AbstractEntryManager
+     */
     public function getPath() {
         return sprintf('%s/%s', $this->__parent_path, $this->__fields[self::ENTRY_FIELD_NAME]);
     }
 
+    /**
+     * @see AbstractEntryManager
+     */
     public function __toString() {
         $max = max(array_map(function($v) { return strlen($v); }, self::FIELDS));
         $lines = array();
@@ -100,6 +128,10 @@ class EntryUnix extends AbstractEntry
         return implode("\n", $lines);
     }
 
+    /**
+     * Return all the data that describe the entry.
+     * @return array
+     */
     public function getFields() {
         return $this->__fields;
     }
