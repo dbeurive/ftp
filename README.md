@@ -22,7 +22,7 @@ This repository contains a wrapper around the (pretty good) PHP functionalities 
     $entry = $ftp->entryExists($remote_path);
     $status = $ftp->mkdirRecursiveIfNotExist($remote_path);
     
-    $ftp->setEntryClassName($your_own_class);
+    $ftp->setEntryManagerClassName($your_own_class_name);
 
 # Installation
 
@@ -88,6 +88,11 @@ manages the properties. The default class used is [EntryManagerUnix](https://git
 
 However, you can write and declare your own class to handle another use case. Your class must extends the abstract class
 [AbstractEntryManager](https://github.com/dbeurive/ftp/blob/master/src/AbstractEntryManager.php).
+
+> But you must set your Ftp manager **BEFORE** issuing any command that deals with entries (LIST...).
+> You should set it right after you instantiate the Ftp object.  
+
+See [this example](https://github.com/dbeurive/ftp/blob/master/examples/set-entry-manager.php).
 
 # Unit tests
 
