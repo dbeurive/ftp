@@ -1,4 +1,4 @@
-<phpunit bootstrap="./tests/bootstrap.php" colors="true" verbose="true">
+<phpunit bootstrap="./tests/bootstrap.php" colors="true" verbose="true" stopOnFailure="true">
     <testsuites>
         <testsuite name="Ftp test">
             <directory suffix="Test.php">./tests</directory>
