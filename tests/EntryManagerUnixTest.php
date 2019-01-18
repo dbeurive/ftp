@@ -1,14 +1,14 @@
 <?php
 
 /**
- * ./vendor/bin/phpunit ./tests/EntryUnixTest.php
+ * ./vendor/bin/phpunit ./tests/EntryManagerUnixTestnixTest.php
  */
 
 use dbeurive\Ftp\EntryManagerUnix;
 use dbeurive\Ftp\Exception as FtpException;
 use PHPUnit\Framework\TestCase;
 
-class EntryUnixTest extends TestCase
+class EntryManagerUnixTest extends TestCase
 {
     public function testParseOkBasic() {
         $input = '-rw-r--r--    1 10       0               11 Jan 15 14:08 file0.txt';
