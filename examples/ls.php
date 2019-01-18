@@ -30,7 +30,7 @@ try {
 
 /**
  * @var string $_name
- * @var \dbeurive\Ftp\AbstractEntry $_entry
+ * @var \dbeurive\Ftp\AbstractEntryManager $_entry
  */
 foreach ($entries as $_name => $_entry) {
     printf("%s\n\n", $_entry);
