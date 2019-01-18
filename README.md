@@ -84,10 +84,10 @@ It is not possible to handle all possible text organisations (for all OS and may
 properties.
 
 Thus, the FTP wrapper lets the user the possibility to declare its own class that handles the parsing of the text and
-manages the properties. The default class used is [EntryUnix](https://github.com/dbeurive/ftp/blob/master/src/EntryUnix.php).
+manages the properties. The default class used is [EntryManagerUnix](https://github.com/dbeurive/ftp/blob/master/src/EntryManagerUnix.php).
 
 However, you can write and declare your own class to handle another use case. Your class must extends the abstract class
-[AbstractEntry](https://github.com/dbeurive/ftp/blob/master/src/AbstractEntry.php).
+[AbstractEntryManager](https://github.com/dbeurive/ftp/blob/master/src/AbstractEntryManager.php).
 
 # Unit tests
 
