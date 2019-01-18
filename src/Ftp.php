@@ -19,19 +19,23 @@ class Ftp
     const OPTION_PORT        = 'port';
     const OPTION_TIMEOUT     = 'timeout';
 
-    /** @var string Name of the class used to parse the text returned by the FTP command LIST. */
-    private $__entryClassName = EntryUnix::class;
-    /** @var string */
+    /** @var string Name of the class used to parse the text returned by the FTP command LIST.
+     *       This is the default entry manager. The default entry manager is suitable for typical FTP servers that run on UNIX hosts.
+     */
+    private $__entryClassName = EntryManagerUnix::class;
+    /** @var string FTP user. */
     private $__userName;
-    /** @var string */
+    /** @var string Password for the FTP user. */
     private $__password;
-    /** @var string */
+    /** @var string Name of the host that runs the FTP server. */
     private $__host;
-    /** @var array */
+    /** @var array List of options that apply to the opening of the FTP connexion. */
     private $__options = array(self::OPTION_PORT => 21, self::OPTION_TIMEOUT => 90);
-    /** @var resource A FTP stream */
+    /** @var resource The FTP stream. */
     private $__ftpStream;
-    /** @var bool */
+    /** @var bool This flag represents the state of the user authentication.
+             The value true means that the user is authenticated.
+             The value false means that the user is not authenticated. */
     private $__logged = false;
 
     /**
@@ -68,11 +72,13 @@ class Ftp
     }
 
     /**
-     * Set the name of the class that represents en entry.
-     * @param string $in_class_name Name of the class that represents an entry.
+     * Set the name of the class that represents an entry manager.
+     * @param string $in_class_name Name of the class that represents an entry manager.
+     *        The class that represents an entry manager must extends the abstract class AbstractEntryManager.
      * @return $this
+     * @see AbstractEntryManager
      */
-    public function setEntryClassName($in_class_name) {
+    public function setEntryManager($in_class_name) {
         $this->__entryClassName = $in_class_name;
         return $this;
     }
@@ -268,7 +274,7 @@ class Ftp
                 $p = $p . '/' . $parts[$i];
             }
 
-            /** @var bool|AbstractEntry $entry */
+            /** @var bool|AbstractEntryManager $entry */
             $entry = $this->entryExists($p);
 
             if (true === $entry) {
@@ -329,7 +335,7 @@ class Ftp
      */
     public function deleteIfExists($in_file_path) {
 
-        /** @var bool|AbstractEntry $entry */
+        /** @var bool|AbstractEntryManager $entry */
         $entry = $this->entryExists($in_file_path);
 
         if (true === $entry) {
@@ -351,7 +357,7 @@ class Ftp
     /**
      * Test whether an entry (directory, file of link), identified by its given path, exists or not.
      * @param string $in_entry_path Path to the entry.
-     * @return bool|AbstractEntry The method may return an instance of the class then represents an entry, the value true,
+     * @return bool|AbstractEntryManager The method may return an instance of the class then represents an entry, the value true,
      *         or the value false, depending on the context:
      *         - If the entry is "/", "." or "./", then the method returns the value true.
      *         - If the entry does not exist, then the method returns the value false.
@@ -384,7 +390,7 @@ class Ftp
                 return false;
             }
 
-            /** @var AbstractEntry $next_entry */
+            /** @var AbstractEntryManager $next_entry */
             $next_entry = $entries[$next];
 
             if (count($parts) == $i+2) {
@@ -408,7 +414,7 @@ class Ftp
      * @throws Exception
      */
     public function directoryExists($in_directory_path) {
-        /** @var AbstractEntry|bool $entry */
+        /** @var AbstractEntryManager|bool $entry */
         $entry = $this->entryExists($in_directory_path);
         if (is_bool($entry)) {
             return $entry;
@@ -426,7 +432,7 @@ class Ftp
      * @throws Exception
      */
     public function fileExists($in_file_path) {
-        /** @var AbstractEntry|bool $entry */
+        /** @var AbstractEntryManager|bool $entry */
         $entry = $this->entryExists($in_file_path);
         if (is_bool($entry)) {
             return false;
@@ -488,7 +494,7 @@ class Ftp
          */
         foreach($in_raw_list as $position => $data_text)
         {
-            /** @var AbstractEntry $e */
+            /** @var AbstractEntryManager $e */
             $e = call_user_func($this->__entryClassName . '::getInstance', $data_text, $in_dir);
             $entries[$e->getBaseName()] = $e;
         }
