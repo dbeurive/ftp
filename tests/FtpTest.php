@@ -186,7 +186,7 @@ class FtpTest extends TestCase
 
 
         foreach (self::$__expected_types as $entry_name => $expected_type) {
-            /** @var \dbeurive\Ftp\AbstractEntry $entry */
+            /** @var \dbeurive\Ftp\AbstractEntryManager $entry */
             $entry = $entries[$entry_name];
             $this->assertArrayHasKey($entry_name, $entries);
             switch ($expected_type) {
@@ -427,18 +427,18 @@ class FtpTest extends TestCase
 
         /** @var string $_path */
         foreach ($paths as $_path => $_expected_status) {
-            /** @var bool|\dbeurive\Ftp\AbstractEntry $entry */
+            /** @var bool|\dbeurive\Ftp\AbstractEntryManager $entry */
             $entry = $ftp->entryExists($_path);
             switch ($_expected_status) {
                 case self::RV_TRUE: $this->assertTrue($entry); break;
                 case self::RV_FALSE: $this->assertFalse($entry); break;
                 case self::RV_FILE: {
-                    $this->assertInstanceOf(\dbeurive\Ftp\AbstractEntry::class, $entry);
+                    $this->assertInstanceOf(\dbeurive\Ftp\AbstractEntryManager::class, $entry);
                     $this->assertTrue($entry->isFile());
 
                 }; break;
                 case self::RV_DIRECTORY: {
-                    $this->assertInstanceOf(\dbeurive\Ftp\AbstractEntry::class, $entry);
+                    $this->assertInstanceOf(\dbeurive\Ftp\AbstractEntryManager::class, $entry);
                     $this->assertTrue($entry->isDirectory());
                 }; break;
                 default: throw new \Exception('Unexpected error!');
