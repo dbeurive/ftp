@@ -7,14 +7,14 @@
 namespace dbeurive\Ftp;
 
 /**
- * Class AbstractEntry
+ * Class AbstractEntryManager
  *
  * This class defines the minimal interface for an entry manager.
  *
  * @package dbeurive\Ftp
  */
 
-abstract class AbstractEntry
+abstract class AbstractEntryManager
 {
 
     /**
