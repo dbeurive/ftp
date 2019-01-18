@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "name": "dbeurive/ftp",
   "description": "This package implements a simple FTP client with handy features",
   "license": "MIT",
