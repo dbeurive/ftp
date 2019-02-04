@@ -202,17 +202,7 @@ class EntryManagerUnix extends AbstractEntryManager
                 $p[self::ENTRY_FIELD_NUMBER]));
         }
 
-        if (1 !== preg_match('/^\d+$/', $p[self::ENTRY_FIELD_OWNER])) {
-            throw new Exception(sprintf('Cannot parse the text "%s" (invalid owner: %s)',
-                $in_entry_text,
-                $p[self::ENTRY_FIELD_OWNER]));
-        }
-
-        if (1 !== preg_match('/^\d+$/', $p[self::ENTRY_FIELD_GROUP])) {
-            throw new Exception(sprintf('Cannot parse the text "%s" (invalid group: %s)',
-                $in_entry_text,
-                $p[self::ENTRY_FIELD_GROUP]));
-        }
+        // The owner or the group may be represented by integers or strings.
 
         if (1 !== preg_match('/^\d+$/', $p[self::ENTRY_FIELD_SIZE])) {
             throw new Exception(sprintf('Cannot parse the text "%s" (invalid size: %s)',
