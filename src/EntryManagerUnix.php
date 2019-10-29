@@ -158,12 +158,17 @@ class EntryManagerUnix extends AbstractEntryManager
      *         - ENTRY_FIELD_TIME
      *         - ENTRY_FIELD_NAME
      *         - ENTRY_FIELD_TYPE
+     *         If the given string should be discarded, then the method returns the value null.
      * @throws Exception
      */
     static public function parse($in_entry_text) {
         $parsed_data = preg_split('/\s+/', $in_entry_text);
 
-        if ( count($parsed_data) < count(self::FIELDS)) {
+        if (end($parsed_data) == '.' or end($parsed_data) == '..') {
+            return null;
+        }
+
+        if (count($parsed_data) < count(self::FIELDS)) {
             throw new Exception(sprintf('Cannot parse the text "%s"', $in_entry_text));
         }
 
